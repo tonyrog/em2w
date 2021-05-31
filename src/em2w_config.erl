@@ -13,7 +13,7 @@
 
 -import(lists, [map/2]).
 
--include_lib("xmerl/inc/xmerl.hrl").
+-include_lib("xmerl/include/xmerl.hrl").
 -include_lib("kernel/include/file.hrl").
 
 compile() -> compile("config").
@@ -182,16 +182,16 @@ user_collect([], UId, false, UAcc, CAcc) ->
 
 
 
-rebuild(E,R) when record(E, xmlElement) ->
+rebuild(E,R) when is_record(E, xmlElement) ->
     Content = rebuild_list(E#xmlElement.content,R),
     Attr0   = map(fun reattr/1, E#xmlElement.attributes),
     Attr1   = defattr(E#xmlElement.name, Attr0, R),
     {E#xmlElement.name, Attr1, Content};
-rebuild(E,R) when record(E, xmlText) ->
+rebuild(E,R) when is_record(E, xmlText) ->
     {error, bad_content}.
 
 
-rebuild_list([E|Es],R) when record(E, xmlElement) ->
+rebuild_list([E|Es],R) when is_record(E, xmlElement) ->
     Content = rebuild_list(E#xmlElement.content,R),
     Attr0   = map(fun reattr/1, E#xmlElement.attributes),
     Attr1   = defattr(E#xmlElement.name, Attr0, R),
@@ -218,7 +218,7 @@ defadd([{A,V}|As], ElemName, Attr0) ->
 		    defadd(As, ElemName, Attr0);
 		'#IMPLIED' ->
 		    defadd(As, ElemName, Attr0);
-		_ when list(V) ->
+		_ when is_list(V) ->
 		    defadd(As, ElemName, [{A,V}|Attr0]);
 		_ ->
 		    defadd(As, ElemName, Attr0)

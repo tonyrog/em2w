@@ -1,0 +1,9 @@
+{application, em2w,
+ [{description, "em2w - email web page"},
+  {vsn, git},
+  {modules, ["@@MODULES@@"]},
+%%  {mod, {em2w_app, []}},
+%%  {registered, [em2w_srv]},
+  {env, []},
+  {applications,[kernel,stdlib]}
+  ]}.

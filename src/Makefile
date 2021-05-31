@@ -1,22 +1,41 @@
-ERLC= erlc
-ERLC_FLAGS=-pa /usr/local/jungerl/jungerl/lib/xmerl/ebin/ -I../include 
-EBIN=../ebin
+#@BEGIN-APP-DEFAULT-RULES@
+APP=$(shell basename `cd ..; pwd`)
+ERLC=$(shell which erlc)
+ERLC_FLAGS=-MMD -MP -MF .$<.d -I ../.. +debug_info
+YRL_SRC=$(wildcard *.yrl)
+XRL_SRC=$(wildcard *.xrl)
+ERL_SOURCES=$(wildcard *.erl) $(YRL_SRC:%.yrl=%.erl) $(XRL_SRC:%.xrl=%.erl)
+ERL_OBJECTS=$(ERL_SOURCES:%.erl=../ebin/%.beam)
+ALL_OBJECTS=$(ERL_OBJECTS)
+ERL_MODULES=$(ERL_SOURCES:%.erl=%)
+comma=,
+empty=
+space = $(empty) $(empty)
+MODULES=$(subst $(space),$(comma),$(ERL_MODULES))
+VERSION=$(shell git describe --always --tags)
+APP_SRC=$(APP).app.src
+APP_TARGET=../ebin/$(APP).app
 
-OBJS = \
-	$(EBIN)/mime.beam \
-	$(EBIN)/mime_types.beam \
-	$(EBIN)/mime_gen.beam \
-	$(EBIN)/em2w.beam \
-	$(EBIN)/em2w_verify.beam \
-	$(EBIN)/em2w_config.beam
+.PRECIOUS: $(YRL_SRC:%.yrl=%.erl) $(XRL_SRC:%.xrl=%.erl)
 
-all:	$(OBJS)
+all: $(APP_TARGET) $(ALL_OBJECTS)
 
 clean:
-	rm $(OBJS)
+	rm -f $(ALL_OBJECTS) *.core .*.d
 
-$(EBIN)/em2w.beam:		em2w.hrl
+../ebin/%.beam: %.erl
+	$(ERLC) $(ERLC_FLAGS) -o ../ebin $<
 
+%.erl: %.yrl
+	$(ERLC) $<
 
-$(EBIN)/%.beam:	%.erl
-	$(ERLC) $(ERLC_FLAGS) -o$(EBIN) $<
+%.erl: %.xrl
+	$(ERLC) $<
+
+$(APP_TARGET): $(APP_SRC)
+	sed -e 's;{vsn,.*git};{vsn,"$(VERSION)"};' -e 's;"@@MODULES@@";$(MODULES);' $(APP_SRC) > $(APP_TARGET)
+
+.%.d: ;
+
+-include .*.d
+#@END-APP-DEFAULT-RULES@
