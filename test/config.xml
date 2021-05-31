@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding = 'ISO-8859-1' ?>
+<!DOCTYPE Em2w SYSTEM "em2w.dtd">
+
+<Em2w version="1.0">
+
+  <Site id="demo">
+    <Transport>
+      <Ftp host="127.0.0.1" 
+	user="em2w" password="mail2web" 
+	vpath="/em2w"
+	path="/home/em2w/upload" />
+    </Transport>
+
+    <User id="tony@rogvall.com" admin="true" verify="require">
+      <Content type="*/*"/>
+    </User>
+
+    <User id="roland.aalto@pixdesign.nu"/>
+
+    <User id="micke@keysendal.com"/>
+
+    <User id="kim@rogvall.com"/>
+
+    <Page id="demo_page1">
+      <Content type="text/plain"/>
+      <Content type="text/html"/>
+      <Content type="image/jpeg"/>
+    </Page>
+  </Site>
+
+  <Site id="pixcomab.com">
+    <Transport>
+      <Ftp host="ftp.pixdesign.nu" 
+	user="em2w" password="emtowe002" 
+	vpath="/em2w"
+	path="/em2w_loader" />
+    </Transport>
+
+    <User id="roland.aalto@pixdesign.nu"/>
+    <User id="kim@rogvall.com"/>
+  </Site>    
+
+  <Site id="autosale">
+    <Transport>
+      <Ftp host="ftp.pixdesign.nu" 
+	user="pixdesiger" password="sevenof9" 
+	vpath="/autosale"
+	path="/pixdesigner/pixel/autosale/em2w" />
+    </Transport>
+
+    <User id="roland.aalto@pixdesign.nu"/>
+    <User id="kim@rogvall.com"/>
+  </Site>    
+
+  <Site id="powerup">
+    <Transport>
+      <Ftp host="ftp.pixdesign.nu" 
+	user="pixdesiger" password="sevenof9" 
+	vpath="/powerup/em2w"
+	path="/pixdesigner/pixel/powerup/em2w" />
+    </Transport>
+
+    <User id="roland.aalto@pixdesign.nu"/>
+    <User id="kim@rogvall.com"/>
+  </Site>    
+
+
+
+  <Site id="test">
+
+    <Transport>
+      <Ftp host="ftp.test.nu" 
+	user="test" password="test" 
+	vpath="/em2w"
+	path="/test/em2w" />
+
+      <Http url="http://www.test.nu/em2w" 
+	method="put"
+	user="test1" password="test1" 
+	vpath="/em2w"/>
+    </Transport>
+
+    <User id="admin@test.nu">
+      <Content type="*/*"/>
+    </User>
+
+    <Page id="page1">
+      <Item id="i1">
+	<Content type="text/html"/>
+
+	<User id="a@foo.com"/>
+
+	<User id="b@bar.com">
+	  <Content type="image/jpeg"/>
+	</User>
+      </Item>
+
+      <Item id="i2">
+	<Content type="text/plain"/>
+	<User id="a@foo.com"/>
+      </Item>
+
+      <Item id="i3">
+	<Content type="text/plain"/>
+	<User id="b@bar.com"/>
+      </Item>
+
+    </Page>
+
+    <Page id="page2">
+
+      <Item id="i21">
+	<User id="a@foo.com"/>
+      </Item>
+
+      <Item id="i22">
+	<User id="a@foo.com"/>
+      </Item>
+
+      <Item id="i23">
+	<User id="b@bar.com"/>
+      </Item>
+
+    </Page>
+
+  </Site>    
+
+</Em2w>

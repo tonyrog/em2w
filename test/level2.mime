@@ -1,0 +1,48 @@
+Content-Type: multipart/alternative;
+ boundary="Level1"
+
+--Level1
+
+Content-Type: multipart/alternative;
+ boundary="Level2"
+
+--Level2
+Content-Type: text/plain
+
+Hello
+
+--Level2
+Content-Type: text/plain
+
+World
+
+--Level2--
+
+--Level1
+
+Content-Type: multipart/alternative;
+ boundary="Level22"
+
+--Level22
+Content-Type: text/plain
+
+Hi
+
+--Level22
+Content-Type: text/plain
+
+Again
+
+--Level22--
+
+--Level1
+Content-Type: text/plain
+
+End
+--Level1--
+
+
+
+
+
+

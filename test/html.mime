@@ -1,0 +1,41 @@
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top"><img
+ src="cid:part1.01020503.00070108@rogvall.com" alt="Dia Logo"
+ width="350" height="130">
+      <br>
+      </td>
+      <td valign="top">
+      <ul>
+        <li>Dia will be 1</li>
+        <li>Dia will 2</li>
+        <li>Dia will 3<br>
+        </li>
+      </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><b>What about the DIA when you have <font
+ color="#33cc00">XINE</font></b><br>
+      </td>
+      <td valign="top"><img
+ src="cid:part2.08000103.06090904@rogvall.com" alt="Xine" width="600"
+ height="120">
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</body>
+</html>

@@ -1,0 +1,97 @@
+
+   2
+ em w
+
+1. How it works
+
+Mail clients send a mail to em2w@em2w.com with a command in the
+subject line on form <cmd> <site>/<page>/<item>[/<subitem>] and
+the content attached or editied with HTML mail client.
+
+The Mail will be recived and verified by the em2w, the mail is
+unpacked and reconstructed to fit a web page.
+
+The new content is then synced with the remote ftp site.
+
+
+2. Main config
+
+main configuration is found in /home/em2w/em2w.xml. 
+It is in XML (em2w.dtd) format
+
+The structure on the remote ftp site MUST be
+
+ Ftp-Dir/<page-name>/<item-name>
+
+It can be create manually with ftp commands or with
+em2w mail commands such as (add <site>/<page> and add <site>/<page>/<item>)
+
+
+3. Authentication 
+
+In order to authenticate clients S/MIME PKCS7 format or PGP must be used.
+The configuration of users that has access to update a site has the form
+
+{EMail-Address, Site}.
+
+  example 
+        {"tony@rogvall.com", "bix"}
+        {"tony@rogvall.com", "em2w"}.
+	{"*", "demo"}.
+
+or
+
+{EMail-Address, Site, Cert | Cert-File-Name}.
+
+
+4. Limits
+
+The limitations on what content and how much that may be uploaded in 
+one updated is decsribed by the command.
+
+{Email-Address, Site, Content-List, Max-Message-Size}
+
+{Email-Address, Site, Content, Max-Content-Size}
+
+   example
+
+       {"tony@rogvall.com", "bix", 
+		["text/html", "text/plain", "image/*"], 32000}
+
+       {"*", "demo", ["text/plain"], 128}
+
+       {"*@rogvall.com", "bix", ["*/*"], all}
+
+       {"tony@rogvall.com", "bix", "text/html", 1024}
+
+       {"tony@rogvall.com", "bix", "image/*", 16000}
+
+
+
+5. Mail Commands
+
+r[eplace] <site>/<page>/<item>[/<flow>]
+
+d[elete] <site>/<page>/<item>[/<flow>]
+
+i[nsert] <site>/<page>/<item>[/<flow>]
+
+a[ppend] <site>/<page>/<item>
+
+p[repend] <site>/<page>/<item>
+
+flows] <site>/<page>/<item>/<max-flows>
+
+sync <site>[/<page>[/<item>]]
+
+add <site>/<page>[/<item>]
+
+del <site>/<page>[/<item>]
+
+
+
+
+
+
+
+

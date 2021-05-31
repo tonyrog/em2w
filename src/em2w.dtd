@@ -1,0 +1,56 @@
+
+<!ELEMENT Em2w (Site|User)*>
+<!ATTLIST Em2w version CDATA #REQUIRED>
+
+<!ELEMENT Site   (Transport*,(Page|User)*)>
+<!ATTLIST Site id CDATA #REQUIRED>
+
+<!ELEMENT Transport (Ftp|SFtp|Http)*>
+
+<!ELEMENT Page (User|Item|Content)*>
+<!ATTLIST Page id CDATA #REQUIRED>
+<!ATTLIST Page charset CDATA "iso-8859-1">
+
+<!ELEMENT Item (User|Content)*>
+<!ATTLIST Item id CDATA #REQUIRED>
+<!ATTLIST Item subitem-max CDATA "infinite">
+<!ATTLIST Item subitem-separtor CDATA  "hr">
+<!ATTLIST Item subitem-layout (horizontal|vertical) "vertical">
+
+<!ELEMENT Ftp EMPTY>
+<!ATTLIST Ftp host CDATA #REQUIRED>
+<!ATTLIST Ftp port CDATA "21">
+<!ATTLIST Ftp user CDATA #REQUIRED>
+<!ATTLIST Ftp password CDATA #REQUIRED>
+<!ATTLIST Ftp path CDATA #IMPLIED>
+<!ATTLIST Ftp vpath CDATA #IMPLIED>
+
+<!ELEMENT SFtp EMPTY>
+<!ATTLIST SFtp host CDATA #REQUIRED>
+<!ATTLIST SFtp port CDATA "22">
+<!ATTLIST SFtp user CDATA #REQUIRED>
+<!ATTLIST SFtp password CDATA #REQUIRED>
+<!ATTLIST SFtp path CDATA #IMPLIED>
+<!ATTLIST SFtp vpath CDATA #IMPLIED>
+
+<!ELEMENT Http EMPTY>
+<!ATTLIST Http url CDATA #REQUIRED>
+<!ATTLIST Http method (put|post) #REQUIRED>
+<!ATTLIST Http type (basic|digest) "basic">
+<!ATTLIST Http user CDATA #REQUIRED>
+<!ATTLIST Http password CDATA #REQUIRED>
+<!ATTLIST Http vpath CDATA #IMPLIED>
+
+<!ELEMENT User (Content)*>
+<!ATTLIST User id CDATA #REQUIRED>
+<!ATTLIST User admin (true|false) #IMPLIED>
+<!ATTLIST User verify (require|off|on) "off">
+
+<!ELEMENT Content EMPTY>
+<!ATTLIST Content type CDATA #REQUIRED>
+<!ATTLIST Content filter (include|exclude) #IMPLIED>
+
+
+
+
+
