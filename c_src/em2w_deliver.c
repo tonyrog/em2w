@@ -17,11 +17,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 
 #define SPACE(x) (((x) == ' ') || ((x) == '\t'))
 #define NL(x)    (((x) == '\n')||((x) == '\r'))
 
+// strndup is kinda standard nowadays
+#if 0
 char* strndup(char* ptr, int len)
 {
     char* copy;
@@ -34,6 +37,7 @@ char* strndup(char* ptr, int len)
     copy[len] = '\0';
     return copy;
 }
+#endif
 
 static char* verify_cmd = "/home/em2w/bin/smime_email";
 

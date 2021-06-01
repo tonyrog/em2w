@@ -191,7 +191,7 @@ scan_content(Desc,Bound) ->
 	    {ok,Start} = position(Desc1),
 	    case lists:keysearch('CONTENT-TYPE', 1, Hs) of
 		{value, {_, [Type|Params]}} ->
-		    MimeType = tolower(Type),
+		    MimeType = string:to_lower(Type),
 		    case lists:keysearch("boundary", 1, Params) of
 			{value, {_, Boundary}} ->
 			    UBound = unquote(Boundary),
@@ -290,7 +290,7 @@ scan_content_parts(Desc, Bound, List) ->
 %% return {ok, Desc', RestOfBoundaryLine}
 %%
 scan_boundary({Fd,_}, <<>>) ->
-    {ok,Pos} = file:position(Fd, {eof,0}),
+    {ok,_Pos} = file:position(Fd, {eof,0}),
     {eof, {Fd,<<>>}};
 scan_boundary(Desc, Boundary) ->
     scan_boundary(Desc, Boundary, size(Boundary)).
@@ -299,7 +299,7 @@ scan_boundary(Desc, Boundary, BSz) ->
     case line(Desc) of
 	{ok,Desc1, << Boundary:BSz/binary, Rest/binary >>} ->
 	    {ok,Desc1,Rest};
-	{ok,Desc1,Ln} ->
+	{ok,Desc1,_Ln} ->
 	    scan_boundary(Desc1,Boundary,BSz);
         Other -> Other
     end.
@@ -349,14 +349,16 @@ scan_header(Desc, Key, Val, Hs) ->
 make_hdr(Key,[$\s|Val]) -> make_hdr(Key, Val);
 make_hdr(Key,[$\t|Val]) -> make_hdr(Key, Val);
 make_hdr(Key,Val) ->
-    KEY = toupper(Key),
+    KEY = string:to_upper(Key),
     case KEY of
-	"CONTENT-" ++ What ->
+	"CONTENT-" ++ _What ->
 	    Parts =
 		map(fun(Part) ->
-			    case split(Part,$=) of
-				{value,{K,V}} -> {trim(K),trim(V)};
-				false -> trim(Part)
+			    case string:split(Part,$=) of
+				[K,V] ->
+				    {string:trim(K),string:trim(V)};
+				[_] -> 
+				    string:trim(Part)
 			    end
 		    end, tokens(Val, ";")),
 	    {list_to_atom(KEY), Parts};
@@ -364,32 +366,7 @@ make_hdr(Key,Val) ->
 	    {list_to_atom(KEY),Val}
     end.
 
-%% spilt a string around <Chr>
-split(Part, Chr) ->
-    split(Part,[],Chr).
-
-split([H|T],Acc,H) ->
-    {value,{reverse(Acc), T}};
-split([H|T],Acc,Chr) ->
-    split(T,[H|Acc],Chr);
-split([], _, _) ->
-    false.
-    
-
-%% update case a string
-toupper([C|Cs]) when C >= $a, C =< $z ->
-    [(C-$a)+$A | toupper(Cs)];
-toupper([C|Cs]) ->
-    [C|toupper(Cs)];
-toupper([]) -> [].
-
-tolower([C|Cs]) when C >= $A, C =< $Z ->
-    [(C-$A)+$a | tolower(Cs)];
-tolower([C|Cs]) ->
-    [C|tolower(Cs)];
-tolower([]) -> [].
-
-%% unquote if doule quoted value
+%% unquote if double quoted value
 unquote(Cs) ->
     unquote(Cs, $", $").
 
@@ -400,26 +377,12 @@ unquote([Quote1|Cs], Quote1, Quote2) ->
     end;
 unquote(Cs, _, _) -> Cs.
 
-%% trim off leading space
-trim_head([$\s|Cs]) -> trim_head(Cs);
-trim_head([$\t|Cs]) -> trim_head(Cs);
-trim_head(Cs) -> Cs.
-
-%% trim off tailing space
-trim_tail(Cs) ->
-    reverse(trim_head(reverse(Cs))).
-
-%% trim off leading and tailing space
-trim(Cs) ->
-    trim_tail(trim_head(Cs)).
-
 %%
 %% line(Desc) -> 
 %%      {ok,Desc',Line} | eof | {error,Reason}
 %%
 line({Fd,Bin}) ->
     line(Fd,Bin,0).
-
 
 line(Fd,Bin,Offs) ->
     case Bin of
@@ -461,8 +424,8 @@ name_content(Name, C = #mime { headers=Hs, parts=SubContent }) ->
        true ->
 	    SubContent1 = name_content_list(1, Name, SubContent),
 	    case lists:keysearch('CONTENT-TYPE', 1, Hs) of
-		{value,{_,[Type|Params]}} ->
-		    MimeType = tolower(Type),
+		{value,{_,[Type|_Params]}} ->
+		    MimeType = string:to_lower(Type),
 		    C#mime { type = MimeType, 
 				parts = SubContent1 };
 		false ->
@@ -473,7 +436,7 @@ name_content(Name, C = #mime { headers=Hs, parts=SubContent }) ->
 name_content_list(I, Name, [Content|Cs]) ->
     [name_content(Name++"_"++integer_to_list(I), Content) |
      name_content_list(I+1, Name, Cs)];
-name_content_list(_, Name, []) ->
+name_content_list(_, _Name, []) ->
     [].
 
 name(C, BaseName) ->
@@ -484,7 +447,7 @@ name(C, BaseName) ->
 		 C
 	 end,
     C2 = case lists:keysearch('CONTENT-TYPE', 1, C#mime.headers) of
-	     {value,{_,[Type|Params]}} ->
+	     {value,{_,[_Type|Params]}} ->
 		 case lists:keysearch("name", 1, Params) of
 		     {value, {_, QName}} ->
 			 Name = unquote(QName),
@@ -522,7 +485,7 @@ name(C, BaseName) ->
     C3 = case lists:keysearch('CONTENT-TRANSFER-ENCODING', 1, 
 			      C#mime.headers) of
 	     {value, {_, [Encoding]}} ->
-		 C2#mime { encoding = tolower(Encoding) };
+		 C2#mime { encoding = string:to_lower(Encoding) };
 	     _ ->
 		 C2
 	 end,
@@ -587,7 +550,7 @@ main_content(CidMap, Fd, WebDir, C = #mime { type=Type }, Mbox) ->
 
 	"multipart/signed" ->
 	    %% remove the signature
-	    %% Fixme match the protocol paramter instead
+	    %% Fixme match the protocol parameter instead
 	    Parts = filter(
 		      fun(D) when D#mime.type == 
 				  "application/x-pkcs7-signature" ->
@@ -609,7 +572,7 @@ main_content(CidMap, Fd, WebDir, C = #mime { type=Type }, Mbox) ->
 			main_content(CidMap,Fd,WebDir,Part,Mbox)
 		end, C#mime.parts);
 
-	Other ->
+	_Other ->
 	    main_data(CidMap, WebDir, Fd, C, Mbox)
     end.
 
@@ -621,22 +584,22 @@ main_data(CidMap, WebDir, Fd, C, Mbox) ->
     case C#mime.type of
 	"text/plain" ->
 	    case load_content(Fd, Mbox, C) of
-		{eror,Error} ->
+		{eror,_Error} ->
 		    <<>>;
 		{ok, TextBin} ->
-		    TextHtml = esp_html:pcdata(binary_to_list(TextBin), true),
+		    TextHtml = html_pcdata(binary_to_list(TextBin)),
 		    list_to_binary(TextHtml)
 	    end;
 	"text/html" ->
 	    case load_content(Fd, Mbox, C) of
-		{eror,Error} ->
+		{eror,_Error} ->
 		    <<>>;
 		{ok, Html} ->
-		    case catch html_esp:parse(Html) of
-			{error,Error} ->
+		    case catch parse_html(Html) of
+			{error,_Error} ->
 			    <<>>;
-			{ok,{document,Doc}} ->
-			    case remap_html(Doc,CidMap) of
+			{ok,Document} ->
+			    case remap_doc(Document,CidMap) of
 				[{html,_,[{head,_,_},{body,As,Cs}]}] ->
 				    make_flow(As, Cs);
 				[{head,_,_},{body,As,Cs}] ->
@@ -648,14 +611,14 @@ main_data(CidMap, WebDir, Fd, C, Mbox) ->
 			    end
                     end
 	    end;
-	"image/"++IMG ->
+	"image/"++_IMG ->
 	    make_img(C,WebDir);
 	_ ->
 	    make_anchor(C,WebDir)
     end.
 
 make_flow([], Flow) ->
-    list_to_binary(esp_html:format({flow,Flow}));
+    list_to_binary(html_format(Flow));
 make_flow(Attr, Flow) ->
     %% Map body attributes into table attributes
     %% FIXME filter some attributes
@@ -663,28 +626,26 @@ make_flow(Attr, Flow) ->
 	      [{tr,[],[
 		       {td,[],Flow}
 		      ]}]}],
-    list_to_binary(esp_html:format({flow,Flow1})).
+    list_to_binary(html_format(Flow1)).
 
 
-
-
-make_img(C = #mime { filename = File }, WebDir) ->
+make_img(_C = #mime { filename = File }, WebDir) ->
     if File == "" ->
 	    <<>>;
        true ->
 	    list_to_binary([ "<img src=\"", filename:join(WebDir, File), "\">" ])
     end.
 
-make_anchor(C = #mime { filename = File, name=Name }, WebDir) ->
-    if File == "" ->
+make_anchor(_C = #mime { filename = Filename, name=Name }, WebDir) ->
+    if Filename == "" ->
 	    <<>>;
        Name == "" ->
-	    list_to_binary([ "<a href=\"", filename:join(WebDir, File), "\">",
-			        esp_html:pcdata(File), 
+	    list_to_binary([ "<a href=\"", filename:join(WebDir,Filename),"\">",
+			     html_pcdata(Filename), 
 			     "</a>" ]);
        true ->
-	    list_to_binary([ "<a href=\"", filename:join(WebDir, File), "\">",
-			     esp_html:pcdata(Name),
+	    list_to_binary([ "<a href=\"", filename:join(WebDir,Filename),"\">",
+			     html_pcdata(Name),
 			     "</a>" ])
     end.
 
@@ -725,20 +686,24 @@ save(OutDir,CidMap,C,Mbox,Bin) ->
     Decoded  = decode_content(C#mime.encoding, Mbox, Bin),
     Translated = case C#mime.type of
 		     "text/html" -> remap_cid(Decoded, CidMap);
-		     Other -> Decoded
+		     _Other -> Decoded
 		 end,
     file:write_file(FileName, Translated).
 
 remap_cid(Bin, CidMap) ->
-    case catch html_esp:parse(Bin) of
-	{ok,{document,Doc}} ->
-	    Doc1 = remap_html(Doc, CidMap),
-	    list_to_binary(esp_html:format({document,Doc1}));
+    case catch parse_html(Bin) of
+	{ok,Document} ->	    
+	    Content = remap_html(makeup:get_content(Document), CidMap),
+	    Document1 = makeup:set_content(Document,Content),
+	    iolist_to_binary(html_format(Document1));
 	Error ->
 	    ?dbg("remap_cid: Error ~p\n", [Error]),
 	    Bin
     end.
 
+remap_doc(Document, CidMap) ->
+    Content = makeup:get_content(Document),
+    remap_html(Content,CidMap).
 %%
 %% remap values on form "cid:<tag>" to filename
 %%
@@ -748,9 +713,9 @@ remap_html({Tag,As}, CidMap) ->
     {Tag,remap_as(As,CidMap)};
 remap_html([H|T], CidMap) ->
     [remap_html(H,CidMap) | remap_html(T, CidMap)];
-remap_html([], CidMap) ->
+remap_html([], _CidMap) ->
     [];
-remap_html(Other, CidMap) ->
+remap_html(_Other, CidMap) ->
     CidMap.
 
 remap_as([KV={Key,"cid:"++Cid}|As], CidMap) ->
@@ -781,13 +746,13 @@ decode_content("7bit", false, Bin) ->
     Bin;
 decode_content("7bit", true, Bin) ->
     list_to_binary(decode_mbox(binary_to_list(Bin)));
-decode_content("quoted-printable", Mbox, Bin) ->
+decode_content("quoted-printable", _Mbox, Bin) ->
     list_to_binary(decode_qp(binary_to_list(Bin)));
-decode_content("base64", Mbox, Bin) ->
+decode_content("base64", _Mbox, Bin) ->
     list_to_binary(decode_b64(binary_to_list(Bin)));
-decode_content("8bit", Mbox, Bin) ->
+decode_content("8bit", _Mbox, Bin) ->
     Bin;
-decode_content("binary",Mbox,Bin) ->
+decode_content("binary",_Mbox,Bin) ->
     Bin.
 
 %% decode quoted printable
@@ -850,11 +815,11 @@ display_content(C, I) ->
     Indent = indent(I),
     Start = C#mime.start,
     Stop = C#mime.stop,
-    Size = if integer(Start), integer(Stop) -> 
+    Size = if is_integer(Start), is_integer(Stop) -> 
 		   integer_to_list(Stop-Start);
-	      integer(Start) ->
+	      is_integer(Start) ->
 		   integer_to_list(Start) ++ "-";
-	      integer(Stop) ->
+	      is_integer(Stop) ->
 		   "-"++integer_to_list(Start);
 	      true ->
 		   "-"
@@ -867,13 +832,31 @@ display_content(C, I) ->
 indent(N) ->
     lists:duplicate(N*4, $\s).
 
-		    
-    
+parse_html(Data) ->
+    makeup:string(iolist_to_binary(Data),[{strict,false}]).
 
+html_format(Flow) when is_list(Flow) ->
+    makeup:format(Flow, [{content_type,"text/html"}]).
 
-	
+%% replace multiple white space with one space,
+%% remove inital and final white space
+%% then format as {'#PCDATA', Text}
+html_pcdata(Text) when is_list(Text) ->
+    makeup:format({'#PCDATA', trim_text(Text)},[{content_type,"text/html"}]).
 
+trim_text(Cs) ->
+    trim_text_bl0(Cs).
 
-    
-    
-    
+%% skip all leading blanks
+trim_text_bl0([C|Cs]) when C =< 32 -> trim_text_bl0(Cs);
+trim_text_bl0(Cs) -> trim_collect(Cs).
+
+%% skip all but one blanks (unless last)
+trim_text_bl1([C|Cs]) when C =< 32 -> trim_collect(Cs);
+trim_text_bl1([]) -> [];
+trim_text_bl1(Cs) -> [$\s|trim_text(Cs)].
+
+%% collect word
+trim_collect([C|Cs]) when C =< 32 -> trim_text_bl1(Cs);
+trim_collect([C|Cs]) -> [C|trim_collect(Cs)];
+trim_collect([]) -> [].
